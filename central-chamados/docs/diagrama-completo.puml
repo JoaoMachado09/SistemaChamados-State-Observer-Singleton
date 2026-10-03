@@ -1,0 +1,101 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+package padroescomportamentais.state {
+ class Chamado {
+  -titulo: String
+  -estado: ChamadoEstado
+  -historico: List<MudancaStatus>
+  +setEstado(estado)
+  +iniciarAtendimento(): boolean
+  +aguardarCliente(): boolean
+  +retomarAtendimento(): boolean
+  +resolver(): boolean
+  +reabrir(): boolean
+  +fechar(): boolean
+  +cancelar(): boolean
+ }
+ abstract class ChamadoEstado {
+  +getEstado(): String
+  +iniciarAtendimento(chamado): boolean
+  +aguardarCliente(chamado): boolean
+  +retomarAtendimento(chamado): boolean
+  +resolver(chamado): boolean
+  +reabrir(chamado): boolean
+  +fechar(chamado): boolean
+  +cancelar(chamado): boolean
+ }
+ class ChamadoEstadoAberto <<Singleton>>
+ class ChamadoEstadoEmAtendimento <<Singleton>>
+ class ChamadoEstadoAguardandoCliente <<Singleton>>
+ class ChamadoEstadoResolvido <<Singleton>>
+ class ChamadoEstadoFechado <<Singleton>>
+ class ChamadoEstadoCancelado <<Singleton>>
+ class MudancaStatus {
+  -titulo: String
+  -estadoAnterior: String
+  -estadoAtual: String
+ }
+}
+package padroescomportamentais.observer {
+ class Usuario {
+  -nome: String
+  -ultimaNotificacao: String
+  +acompanhar(chamado)
+  +deixarDeAcompanhar(chamado)
+  +update(observable, argumento)
+ }
+ class PainelChamados {
+  -estados: Map<Chamado, String>
+  +acompanhar(chamado)
+  +deixarDeAcompanhar(chamado)
+  +update(observable, argumento)
+ }
+}
+package padroescriacao.singleton {
+ class Parametros <<Singleton>> {
+  -Parametros()
+  -{static} instance: Parametros
+  +{static} getInstance(): Parametros
+  -nomeSistema: String
+  +getNomeSistema(): String
+  +setNomeSistema(nome)
+ }
+}
+package java.util {
+ class Observable
+ interface Observer
+}
+package aplicacao {
+ class Main <<SpringBootApplication>>
+ class Configuracao <<Configuration>>
+ class ConsoleAplicacao <<Component>>
+}
+package servicos {
+ class ChamadoService <<Service>>
+ class NotificacaoService <<Service>>
+}
+Chamado --|> Observable
+Observable o--> Observer
+Usuario ..|> Observer
+PainelChamados ..|> Observer
+Chamado --> ChamadoEstado
+Chamado *--> MudancaStatus
+Usuario ..> MudancaStatus
+PainelChamados ..> MudancaStatus
+Usuario --> Parametros
+ChamadoEstado <|-- ChamadoEstadoAberto
+ChamadoEstado <|-- ChamadoEstadoEmAtendimento
+ChamadoEstado <|-- ChamadoEstadoAguardandoCliente
+ChamadoEstado <|-- ChamadoEstadoResolvido
+ChamadoEstado <|-- ChamadoEstadoFechado
+ChamadoEstado <|-- ChamadoEstadoCancelado
+Main ..> Configuracao
+ConsoleAplicacao --> ChamadoService : Autowired
+ChamadoService --> NotificacaoService : Autowired
+ChamadoService --> Chamado
+NotificacaoService --> PainelChamados : Autowired
+NotificacaoService ..> Usuario
+Configuracao ..> PainelChamados : Bean
+Configuracao ..> Parametros : Bean
+@enduml
